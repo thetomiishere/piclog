@@ -73,15 +73,12 @@ export async function frequency(freqID) {
         const now = new Date();
         const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         try {
-            setPageDisabled(true);
             const result = await addwDate(currentTable, today, session.username);
             if (result.success) {
                 await renderFreq(dateState.year, dateState.month);
             }
         } catch(err){
             console.log(err);
-        } finally {
-            setPageDisabled(false);
         }
     };
 
@@ -148,28 +145,22 @@ export async function renderFreq(year, month) {
                 const confirmOverwrite = confirm(ui.confirm_delete);
                 if (confirmOverwrite) {
                     try {
-                        setPageDisabled(true);
                         const result = await deleteFreq(currentTable, dateString);
                         if (result.success) {
                             await renderFreq(dateState.year, dateState.month);
                         }
                     } catch(err){
                         console.log(err);
-                    } finally {
-                        setPageDisabled(false);
                     }
                 }
             } else {
                 try {
-                    setPageDisabled(true);
                     const result = await addwDate(currentTable, dateString, session.username);
                     if (result.success) {
                         await renderFreq(dateState.year, dateState.month);
                     }
                 } catch(err){
                     console.log(err);
-                } finally {
-                    setPageDisabled(false);
                 }
             }
         };

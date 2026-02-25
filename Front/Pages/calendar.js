@@ -73,17 +73,13 @@ export async function calendar(calendarID) {
     openBtn.onclick = async () => {
         const now = new Date();
         const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        
-        try {
-            setPageDisabled(true);
-            const result = await addwDate(currentTable, today, session.username);
-            if (result.success) {
+        const result = await addwDate(currentTable, today, session.username);
+        if (result.success) {
+            try {
                 await renderCalendar(dateState.year, dateState.month);
+            } catch (err) {
+                console.log(err);
             }
-        } catch (err) {
-            console.log(err);
-        } finally {
-            setPageDisabled(false); 
         }
     };
 
@@ -127,30 +123,24 @@ export async function renderCalendar(year, month) {
             if (hasPhoto) {
                 const confirmOverwrite = confirm(ui.confirm_delete);
                 if (confirmOverwrite) {
-                    try {
-                        setPageDisabled(true);
-                        const result = await deleteCell(currentTable, dateString);
-                        if (result.success) {
+                    const result = await deleteCell(currentTable, dateString);
+                    if (result.success) {
+                        try {
                             await renderCalendar(dateState.year, dateState.month);
+                        } catch (err) {
+                            console.log(err);
                         }
-                    } catch (err) {
-                        console.log(err);
-                    } finally {
-                        setPageDisabled(false); 
                     }
                     return;
                 }
             } else {
-                try {
-                    setPageDisabled(true);
-                    const result = await addwDate(currentTable, dateString, session.username);
-                    if (result.success) {
+                const result = await addwDate(currentTable, dateString, session.username);
+                if (result.success) {
+                    try {
                         await renderCalendar(dateState.year, dateState.month);
+                    } catch (err) {
+                        console.log(err);
                     }
-                } catch (err) {
-                    console.log(err);
-                } finally {
-                    setPageDisabled(false); 
                 }
             }
         };

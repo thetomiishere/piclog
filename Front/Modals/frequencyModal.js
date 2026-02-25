@@ -1,4 +1,5 @@
 import { ui } from '../Pages/dictionary.js';
+import { setPageDisabled } from '../Pages/trivia.js';
 import { addFreq } from '../Services/frequencyService.js';
 
 export function addwDate(freqID, dateStr, username) {
@@ -35,15 +36,22 @@ export function addwDate(freqID, dateStr, username) {
                 alert(ui.value_label.replace(':', '') + " ?");
                 return;
             }
-
-            const result = await addFreq(freqID, dateStr, val, username);
-            if (result.success) {
-                cleanup();
-                alert(ui.added_success);
-                resolve({ success: true });
-            } else {
-                alert(ui.added_failed);
+            try {
+                setPageDisabled(true);
+                const result = await addFreq(freqID, dateStr, val, username);
+                if (result.success) {
+                    cleanup();
+                    alert(ui.added_success);
+                    resolve({ success: true });
+                } else {
+                    alert(ui.added_failed);
+                }
+            } catch(err){
+                console.log(err);
+            } finally {
+                setPageDisabled(false);
             }
+            
         };
 
         closeBtn.onclick = () => {

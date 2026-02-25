@@ -1,4 +1,5 @@
 import { ui } from '../Pages/dictionary.js';
+import { setPageDisabled } from '../Pages/trivia.js';
 import { addCell, hasPhoto } from '../Services/calendarService.js';
 
 export function addwDate(calendarID, dateString, username) {
@@ -48,17 +49,25 @@ export function addwDate(calendarID, dateString, username) {
                 return;
             }
 
-            const compressedBase64 = await compressImage(file);
-            const result = await addCell(calendarID, selectedDate, compressedBase64, username);
+            try {
+                setPageDisabled(true);
+                const compressedBase64 = await compressImage(file);
+                const result = await addCell(calendarID, selectedDate, compressedBase64, username);
 
-            if (result.success) {
-                resetInput();
-                modal.style.display = "none";
-                alert(ui.added_success);
-                resolve(result);
-            } else {
-                alert(ui.added_failed);
+                if (result.success) {
+                    resetInput();
+                    modal.style.display = "none";
+                    alert(ui.added_success);
+                    resolve(result);
+                } else {
+                    alert(ui.added_failed);
+                }
+            } catch (err) {
+                console.log(err);
+            } finally {
+                setPageDisabled(false);
             }
+            
         };
 
         cancelBtn.onclick = () => {
