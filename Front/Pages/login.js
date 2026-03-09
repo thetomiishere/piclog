@@ -47,7 +47,7 @@ loginBtn.onclick = async () => {
         }));
 
         window.location.href = "index.html";
-
+        return;
     } catch (error) {
         console.error("Login Error:", error);
         alert(ui.error_pwd || "Login Failed");
