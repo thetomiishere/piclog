@@ -100,7 +100,6 @@ export async function takeScreenshot(dateState = {}) {
     const addBtn = document.getElementById('openModal');
     const ssBtn = document.getElementById('screenshotBtn');
     const captureArea = document.getElementById('calendarSection');
-
     if (!captureArea) {
         console.error("Capture area '#calendarSection' not found.");
         return;
@@ -121,35 +120,48 @@ export async function takeScreenshot(dateState = {}) {
     captureArea.style.backgroundColor = themeBgColor;
 
     try {
-        const dpr = window.devicePixelRatio || 1;
-        const targetScale = Math.max(dpr * 2, 4);
-
         const canvas = await html2canvas(captureArea, {
             useCORS: true,
             allowTaint: true,
             backgroundColor: themeBgColor,
-            scale: targetScale,
+            scale: 3,
             imageTimeout: 0,
             logging: false,
             onclone: (clonedDoc) => {
                 const clonedArea = clonedDoc.getElementById('calendarSection');
                 if (!clonedArea) return;
 
-                const originalCells = captureArea.querySelectorAll('.day-cell');
                 const clonedCells = clonedArea.querySelectorAll('.day-cell');
 
-                originalCells.forEach((origCell, index) => {
-                    const clonedCell = clonedCells[index];
-                    if (!clonedCell) return;
+                clonedCells.forEach((cell) => {
+                    const computedStyle = window.getComputedStyle(cell);
+                    const bgImg = computedStyle.backgroundImage;
+                    if (bgImg && bgImg !== 'none') {
+                        const urlMatch = bgImg.match(/^url\((['"]?)(.*?)\1\)$/);
+                        if (urlMatch && urlMatch[2]) {
+                            const imgUrl = urlMatch[2];
+                            cell.style.backgroundImage = 'none';
+                            cell.style.position = 'relative';
+                            cell.style.overflow = 'hidden';
 
-                    const computedStyle = window.getComputedStyle(origCell);
-                    clonedCell.style.backgroundImage = computedStyle.backgroundImage;
-                    clonedCell.style.backgroundSize = computedStyle.backgroundSize;
-                    clonedCell.style.backgroundPosition = computedStyle.backgroundPosition;
-                    clonedCell.style.backgroundRepeat = computedStyle.backgroundRepeat;
-                    clonedCell.style.backgroundColor = computedStyle.backgroundColor;
-                    
-                    clonedCell.style.overflow = 'hidden';
+                            const img = clonedDoc.createElement('img');
+                            img.src = imgUrl;
+                            img.crossOrigin = 'anonymous';
+                            img.style.position = 'absolute';
+                            img.style.top = '0';
+                            img.style.left = '0';
+                            img.style.width = '100%';
+                            img.style.height = '100%';
+                            img.style.objectFit = 'cover';
+                            img.style.objectPosition = 'center';
+                            img.style.zIndex = '1';
+
+                            const span = cell.querySelector('span');
+                            if (span) span.style.zIndex = '2';
+
+                            cell.appendChild(img);
+                        }
+                    }
                 });
             }
         });
@@ -168,7 +180,7 @@ export async function takeScreenshot(dateState = {}) {
 
             const file = new File([blob], fileName, { type: 'image/png' });
 
-            // Native Mobile Share / Save to Album
+            // Native Mobile Share / Save to Photos
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
@@ -182,7 +194,6 @@ export async function takeScreenshot(dateState = {}) {
                     }
                 }
             } else {
-                // Desktop direct download
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = fileName;
