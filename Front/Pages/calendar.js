@@ -86,6 +86,73 @@ export async function calendar(calendarID) {
     await updateDate(monthLabel, yearLabel, dateState, currentDisplayDate);
     await renderCalendar(dateState.year, dateState.month);
 
+    const screenshotBtn = document.getElementById('screenshotBtn');
+    if (screenshotBtn) {
+        screenshotBtn.onclick = () => takeScreenshot(dateState);
+    }
+
+}
+
+export async function takeScreenshot(dateState = {}) {
+    const prevBtn = document.getElementById('prevMonth');
+    const nextBtn = document.getElementById('nextMonth');
+    const delBtn = document.getElementById('deleteCalendarBtn');
+    const addBtn = document.getElementById('openModal');
+    const ssBtn = document.getElementById('screenshotBtn');
+    const captureArea = document.getElementById('calendarSection');
+
+    if (!captureArea) {
+        console.error("Capture area '#calendarSection' not found.");
+        return;
+    }
+
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                      document.documentElement.classList.contains('dark-mode') ||
+                      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const themeBgColor = isDarkMode ? '#000000' : '#ffffff';
+
+    if (prevBtn) prevBtn.style.visibility = 'hidden';
+    if (nextBtn) nextBtn.style.visibility = 'hidden';
+    if (delBtn) delBtn.style.visibility = 'hidden';
+    if (addBtn) addBtn.style.visibility = 'hidden';
+    if (ssBtn) ssBtn.style.visibility = 'hidden';
+
+    const originalBg = captureArea.style.backgroundColor;
+    captureArea.style.backgroundColor = themeBgColor;
+
+    try {
+        const canvas = await html2canvas(captureArea, {
+            useCORS: true,
+            backgroundColor: themeBgColor,
+            scale: window.devicePixelRatio > 1 ? window.devicePixelRatio : 2,
+            logging: false
+        });
+
+        const year = dateState.year || new Date().getFullYear();
+        const month = dateState.month !== undefined 
+            ? String(dateState.month + 1).padStart(2, '0') 
+            : String(new Date().getMonth() + 1).padStart(2, '0');
+
+        const image = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = `calendar-${year}-${month}.png`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error("Screenshot capture failed:", error);
+    } finally {
+        captureArea.style.backgroundColor = originalBg;
+        // 5. Restore navigation arrows
+        if (prevBtn) prevBtn.style.visibility = 'visible';
+        if (nextBtn) nextBtn.style.visibility = 'visible';
+        if (delBtn) delBtn.style.visibility = 'visible';
+        if (addBtn) addBtn.style.visibility = 'visible';
+        if (ssBtn) ssBtn.style.visibility = 'visible';
+
+    }
 }
 
 export async function renderCalendar(year, month) {
