@@ -121,37 +121,88 @@ export async function takeScreenshot(dateState = {}) {
     captureArea.style.backgroundColor = themeBgColor;
 
     try {
+        const dpr = window.devicePixelRatio || 1;
+        const targetScale = Math.max(dpr * 2, 4);
+
         const canvas = await html2canvas(captureArea, {
             useCORS: true,
+            allowTaint: true,
             backgroundColor: themeBgColor,
-            scale: window.devicePixelRatio > 1 ? window.devicePixelRatio : 2,
-            logging: false
+            scale: targetScale,
+            imageTimeout: 0,
+            logging: false,
+            onclone: (clonedDoc) => {
+                const clonedArea = clonedDoc.getElementById('calendarSection');
+                if (!clonedArea) return;
+
+                const originalCells = captureArea.querySelectorAll('.day-cell');
+                const clonedCells = clonedArea.querySelectorAll('.day-cell');
+
+                originalCells.forEach((origCell, index) => {
+                    const clonedCell = clonedCells[index];
+                    if (!clonedCell) return;
+
+                    const computedStyle = window.getComputedStyle(origCell);
+                    clonedCell.style.backgroundImage = computedStyle.backgroundImage;
+                    clonedCell.style.backgroundSize = computedStyle.backgroundSize;
+                    clonedCell.style.backgroundPosition = computedStyle.backgroundPosition;
+                    clonedCell.style.backgroundRepeat = computedStyle.backgroundRepeat;
+                    clonedCell.style.backgroundColor = computedStyle.backgroundColor;
+                    
+                    clonedCell.style.overflow = 'hidden';
+                });
+            }
         });
 
         const year = dateState.year || new Date().getFullYear();
         const month = dateState.month !== undefined 
             ? String(dateState.month + 1).padStart(2, '0') 
             : String(new Date().getMonth() + 1).padStart(2, '0');
+        const fileName = `calendar-${year}-${month}.png`;
 
-        const image = canvas.toDataURL("image/png");
-        const link = document.createElement('a');
-        link.href = image;
-        link.download = `calendar-${year}-${month}.png`;
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                console.error("Failed to generate image blob.");
+                return;
+            }
+
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            // Native Mobile Share / Save to Album
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Calendar Screenshot',
+                        text: `Calendar snapshot for ${year}-${month}`
+                    });
+                } catch (shareError) {
+                    if (shareError.name !== 'AbortError') {
+                        console.error("Share failed:", shareError);
+                    }
+                }
+            } else {
+                // Desktop direct download
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            }
+        }, 'image/png', 1.0);
+
     } catch (error) {
         console.error("Screenshot capture failed:", error);
     } finally {
         captureArea.style.backgroundColor = originalBg;
-        // 5. Restore navigation arrows
         if (prevBtn) prevBtn.style.visibility = 'visible';
         if (nextBtn) nextBtn.style.visibility = 'visible';
         if (delBtn) delBtn.style.visibility = 'visible';
         if (addBtn) addBtn.style.visibility = 'visible';
         if (ssBtn) ssBtn.style.visibility = 'visible';
-
     }
 }
 
