@@ -88,152 +88,20 @@ export async function calendar(calendarID) {
 
     const screenshotBtn = document.getElementById('screenshotBtn');
     if (screenshotBtn) {
-        screenshotBtn.onclick = () => takeScreenshot(dateState);
+        screenshotBtn.onclick = () => htmlToCanvas('calendarSection');
     }
 
 }
 
-// export async function takeScreenshot(dateState = {}) {
-//     const prevBtn = document.getElementById('prevMonth');
-//     const nextBtn = document.getElementById('nextMonth');
-//     const delBtn = document.getElementById('deleteCalendarBtn');
-//     const addBtn = document.getElementById('openModal');
-//     const ssBtn = document.getElementById('screenshotBtn');
-//     const captureArea = document.getElementById('calendarSection');
+async function htmlToCanvas(id) {
+    const captureArea = document.getElementById(id);
+    if (!captureArea) return;
 
-//     if (!captureArea) {
-//         console.error("Capture area '#calendarSection' not found.");
-//         return;
-//     }
-
-//     const isDarkMode = document.body.classList.contains('dark-mode') || 
-//                       document.documentElement.classList.contains('dark-mode') ||
-//                       (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-//     const themeBgColor = isDarkMode ? '#000000' : '#ffffff';
-
-//     if (prevBtn) prevBtn.style.visibility = 'hidden';
-//     if (nextBtn) nextBtn.style.visibility = 'hidden';
-//     if (delBtn) delBtn.style.visibility = 'hidden';
-//     if (addBtn) addBtn.style.visibility = 'hidden';
-//     if (ssBtn) ssBtn.style.visibility = 'hidden';
-
-//     const originalBg = captureArea.style.backgroundColor;
-//     captureArea.style.backgroundColor = themeBgColor;
-
-//     try {
-//         const canvas = await html2canvas(captureArea, {
-//             useCORS: true,
-//             allowTaint: true,
-//             backgroundColor: themeBgColor,
-//             scale: 3,
-//             imageTimeout: 0,
-//             logging: false,
-//             onclone: (clonedDoc) => {
-//                 const clonedArea = clonedDoc.getElementById('calendarSection');
-//                 if (!clonedArea) return;
-
-//                 const originalCells = captureArea.querySelectorAll('.day-cell');
-//                 const clonedCells = clonedArea.querySelectorAll('.day-cell');
-
-//                 originalCells.forEach((origCell, index) => {
-//                     const clonedCell = clonedCells[index];
-//                     if (!clonedCell) return;
-
-//                     const computedStyle = window.getComputedStyle(origCell);
-//                     clonedCell.style.backgroundImage = computedStyle.backgroundImage;
-//                     clonedCell.style.backgroundSize = computedStyle.backgroundSize;
-//                     clonedCell.style.backgroundPosition = computedStyle.backgroundPosition;
-//                     clonedCell.style.backgroundRepeat = computedStyle.backgroundRepeat;
-//                     clonedCell.style.backgroundColor = computedStyle.backgroundColor;
-                    
-//                     clonedCell.style.overflow = 'hidden';
-//                 });
-//             }
-//         });
-
-//         const year = dateState.year || new Date().getFullYear();
-//         const month = dateState.month !== undefined 
-//             ? String(dateState.month + 1).padStart(2, '0') 
-//             : String(new Date().getMonth() + 1).padStart(2, '0');
-//         const fileName = `calendar-${year}-${month}.png`;
-
-//         canvas.toBlob(async (blob) => {
-//             if (!blob) {
-//                 console.error("Failed to generate image blob.");
-//                 return;
-//             }
-
-//             const file = new File([blob], fileName, { type: 'image/png' });
-
-//             // Native Mobile Share / Save to Album
-//             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-//                 try {
-//                     await navigator.share({
-//                         files: [file],
-//                         title: 'Calendar Screenshot',
-//                         text: `Calendar snapshot for ${year}-${month}`
-//                     });
-//                 } catch (shareError) {
-//                     if (shareError.name !== 'AbortError') {
-//                         console.error("Share failed:", shareError);
-//                     }
-//                 }
-//             } else {
-//                 // Desktop direct download
-//                 const link = document.createElement('a');
-//                 link.href = URL.createObjectURL(blob);
-//                 link.download = fileName;
-                
-//                 document.body.appendChild(link);
-//                 link.click();
-//                 document.body.removeChild(link);
-//                 URL.revokeObjectURL(link.href);
-//             }
-//         }, 'image/png', 1.0);
-
-//     } catch (error) {
-//         console.error("Screenshot capture failed:", error);
-//     } finally {
-//         captureArea.style.backgroundColor = originalBg;
-//         if (prevBtn) prevBtn.style.visibility = 'visible';
-//         if (nextBtn) nextBtn.style.visibility = 'visible';
-//         if (delBtn) delBtn.style.visibility = 'visible';
-//         if (addBtn) addBtn.style.visibility = 'visible';
-//         if (ssBtn) ssBtn.style.visibility = 'visible';
-//     }
-// }
-async function urlToBase64(url) {
-    try {
-        const response = await fetch(url, { mode: 'cors' });
-        const blob = await response.blob();
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(blob);
-        });
-    } catch {
-        return null;
-    }
-}
-
-export async function takeScreenshot(dateState = {}) {
     const prevBtn = document.getElementById('prevMonth');
     const nextBtn = document.getElementById('nextMonth');
     const delBtn = document.getElementById('deleteCalendarBtn');
     const addBtn = document.getElementById('openModal');
     const ssBtn = document.getElementById('screenshotBtn');
-    const captureArea = document.getElementById('calendarSection');
-
-    if (!captureArea) {
-        console.error("Capture area '#calendarSection' not found.");
-        return;
-    }
-
-    const isDarkMode = document.body.classList.contains('dark-mode') || 
-                      document.documentElement.classList.contains('dark-mode') ||
-                      (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    const themeBgColor = isDarkMode ? '#000000' : '#ffffff';
 
     if (prevBtn) prevBtn.style.visibility = 'hidden';
     if (nextBtn) nextBtn.style.visibility = 'hidden';
@@ -241,112 +109,50 @@ export async function takeScreenshot(dateState = {}) {
     if (addBtn) addBtn.style.visibility = 'hidden';
     if (ssBtn) ssBtn.style.visibility = 'hidden';
 
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                      document.documentElement.classList.contains('dark-mode');
+    const themeBgColor = isDarkMode ? '#000000' : '#ffffff';
     const originalBg = captureArea.style.backgroundColor;
     captureArea.style.backgroundColor = themeBgColor;
 
     try {
-        // Step 1: Pre-fetch all cell images and convert them to Base64 in advance
-        const cellsWithPhoto = captureArea.querySelectorAll('.day-cell[data-has-photo="true"]');
-        const base64Map = new Map();
-
-        await Promise.all(Array.from(cellsWithPhoto).map(async (cell) => {
-            const computedStyle = window.getComputedStyle(cell);
-            const bgImg = computedStyle.backgroundImage;
-
-            if (bgImg && bgImg !== 'none') {
-                const urlMatch = bgImg.match(/^url\((['"]?)(.*?)\1\)$/);
-                if (urlMatch && urlMatch[2]) {
-                    const rawUrl = urlMatch[2];
-                    const base64 = await urlToBase64(rawUrl);
-                    if (base64) {
-                        base64Map.set(cell.id, base64);
-                    }
-                }
-            }
+        const cellImages = captureArea.querySelectorAll('.cell-image');
+        await Promise.all(Array.from(cellImages).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => { img.onload = img.onerror = resolve; });
         }));
 
-        // Step 2: Render screenshot using the pre-loaded Data URIs
         const canvas = await html2canvas(captureArea, {
+            scale: 2,
             useCORS: true,
             allowTaint: true,
             backgroundColor: themeBgColor,
-            scale: 3,
-            imageTimeout: 0,
-            logging: false,
             onclone: (clonedDoc) => {
-                const clonedArea = clonedDoc.getElementById('calendarSection');
-                if (!clonedArea) return;
-
-                const clonedCells = clonedArea.querySelectorAll('.day-cell');
-
-                clonedCells.forEach((cell) => {
-                    const base64Src = base64Map.get(cell.id);
-
-                    if (base64Src) {
-                        cell.style.backgroundImage = 'none';
-                        cell.style.position = 'relative';
-                        cell.style.overflow = 'hidden';
-
-                        const img = clonedDoc.createElement('img');
-                        img.src = base64Src; // Data URI loads instantly
-                        img.style.position = 'absolute';
-                        img.style.top = '0';
-                        img.style.left = '0';
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        img.style.objectPosition = 'center';
-                        img.style.zIndex = '1';
-
-                        const span = cell.querySelector('span');
-                        if (span) span.style.zIndex = '2';
-
-                        cell.appendChild(img);
+                const clonedImages = clonedDoc.querySelectorAll('.cell-image');
+                clonedImages.forEach(img => {
+                    const width = img.naturalWidth;
+                    const height = img.naturalHeight;
+                    if (width && height) {
+                        const imgRatio = width / height;
+                        if (imgRatio > 1.2) {
+                            img.style.objectFit = 'contain';
+                            img.style.width = '100%';
+                            img.style.height = 'auto';
+                            img.style.top = '50%';
+                            img.style.transform = 'translateY(-50%)';
+                        }
                     }
                 });
             }
         });
 
         const year = dateState.year || new Date().getFullYear();
-        const month = dateState.month !== undefined 
-            ? String(dateState.month + 1).padStart(2, '0') 
-            : String(new Date().getMonth() + 1).padStart(2, '0');
-        const fileName = `calendar-${year}-${month}.png`;
+        const month = String((dateState.month ?? new Date().getMonth()) + 1).padStart(2, '0');
+        const fileName = `calendar-${year}-${month}`;
 
-        canvas.toBlob(async (blob) => {
-            if (!blob) {
-                console.error("Failed to generate image blob.");
-                return;
-            }
-
-            const file = new File([blob], fileName, { type: 'image/png' });
-
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Calendar Screenshot',
-                        text: `Calendar snapshot for ${year}-${month}`
-                    });
-                } catch (shareError) {
-                    if (shareError.name !== 'AbortError') {
-                        console.error("Share failed:", shareError);
-                    }
-                }
-            } else {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-            }
-        }, 'image/png', 1.0);
-
-    } catch (error) {
-        console.error("Screenshot capture failed:", error);
+        saveCanvasImage(canvas, fileName);
+    } catch (err) {
+        console.error("Screenshot capture failed:", err);
     } finally {
         captureArea.style.backgroundColor = originalBg;
         if (prevBtn) prevBtn.style.visibility = 'visible';
@@ -355,6 +161,35 @@ export async function takeScreenshot(dateState = {}) {
         if (addBtn) addBtn.style.visibility = 'visible';
         if (ssBtn) ssBtn.style.visibility = 'visible';
     }
+}
+
+function saveCanvasImage(canvas, filename) {
+    canvas.toBlob(async (blob) => {
+        if (!blob) {
+            console.error("Failed to export canvas image.");
+            return;
+        }
+        const file = new File([blob], `${filename}.png`, { type: 'image/png' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: 'Calendar Export',
+                    text: `Calendar snapshot for ${filename}`
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') console.error(err);
+            }
+        } else {
+            const link = document.createElement('a');
+            link.download = `${filename}.png`;
+            link.href = URL.createObjectURL(blob);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+        }
+    }, 'image/png', 1.0);
 }
 
 export async function renderCalendar(year, month) {
@@ -430,23 +265,88 @@ export async function renderCalendar(year, month) {
     }
 }
 
+// export function populateCell(dateString, imageUrl) {    
+//     const targetCell = document.getElementById(`cell-${dateString}`);
+//     if (!targetCell) return;
+
+//     const dateSpan = targetCell.querySelector('span');
+//     const isDark = document.body.classList.contains('dark-mode');
+
+//     if (imageUrl) {
+//         targetCell.setAttribute('data-has-photo', 'true');
+//         if (dateSpan) dateSpan.style.display = 'none';
+//         targetCell.style.backgroundColor = isDark ? '#000000' : '#ffffff';
+//         targetCell.style.backgroundImage = (imageUrl === "none") ? 'none' : `url(${imageUrl})`;
+//     } else {
+//         targetCell.removeAttribute('data-has-photo');
+//         if (dateSpan) dateSpan.style.display = 'block';
+//         targetCell.style.backgroundImage = 'none';
+//         targetCell.style.backgroundColor = '';
+//     }
+// }
 export function populateCell(dateString, imageUrl) {    
     const targetCell = document.getElementById(`cell-${dateString}`);
     if (!targetCell) return;
 
     const dateSpan = targetCell.querySelector('span');
     const isDark = document.body.classList.contains('dark-mode');
+    const themeBgColor = isDark ? '#000000' : '#ffffff';
 
-    if (imageUrl) {
+    const existingImg = targetCell.querySelector('.cell-image');
+    if (existingImg) existingImg.remove();
+
+    targetCell.style.backgroundColor = themeBgColor;
+    if (imageUrl && imageUrl !== "none") {
         targetCell.setAttribute('data-has-photo', 'true');
         if (dateSpan) dateSpan.style.display = 'none';
-        targetCell.style.backgroundColor = isDark ? '#000000' : '#ffffff';
-        targetCell.style.backgroundImage = (imageUrl === "none") ? 'none' : `url(${imageUrl})`;
+        
+        targetCell.style.position = 'relative';
+        targetCell.style.overflow = 'hidden';
+        targetCell.style.backgroundImage = 'none';
+
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.className = 'cell-image';
+        img.crossOrigin = 'anonymous';
+        
+        img.style.position = 'absolute';
+        img.style.top = '0';
+        img.style.left = '0';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.zIndex = '1';
+
+        const adjust3to4Scaling = () => {
+            const width = img.naturalWidth;
+            const height = img.naturalHeight;
+
+            if (width && height) {
+                const imgRatio = width / height;
+                const targetRatio = 3 / 4; // 0.75
+
+                if (imgRatio > targetRatio) {
+                    img.style.objectFit = 'contain';
+                    img.style.objectPosition = 'center center';
+                } else {
+                    img.style.objectFit = 'cover';
+                    img.style.objectPosition = 'center center';
+                }
+            }
+        };
+
+        if (img.complete && img.naturalWidth) {
+            adjust3to4Scaling();
+        } else {
+            img.onload = adjust3to4Scaling;
+        }
+
+        if (dateSpan) dateSpan.style.zIndex = '2';
+
+        targetCell.appendChild(img);
     } else {
         targetCell.removeAttribute('data-has-photo');
-        if (dateSpan) dateSpan.style.display = 'block';
+        if (dateSpan) dateSpan.style.display = 'none';
         targetCell.style.backgroundImage = 'none';
-        targetCell.style.backgroundColor = '';
     }
 }
 
